@@ -123,7 +123,6 @@ git status
 git status -sb
 ```
 
-the latter produces:
 ![git status -sb](http://i.imgur.com/K0OY3nm.png)
 
 [*Read more about the Git `status` command.*](http://git-scm.com/docs/git-status)
