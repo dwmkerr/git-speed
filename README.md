@@ -446,6 +446,8 @@ git remote prune origin
 git rebase --interactive HEAD~2
 ```
 
+> ! The golden rule of git rebase is to never use it on public branches.
+
 ## Forced push but still ensure you don't overwrite other's work
 ```sh
 git push --force-with-lease <remote-name> <branch-name>
