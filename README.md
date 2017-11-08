@@ -402,6 +402,13 @@ Then, you will need to use the `e` option to manually choose which lines to add.
 git add -p
 ```
 
+## Interactiv staging
+```sh
+git add -i
+```
+
+--interactive (or -i) is the big brother of --patch. --patch only lets you decide about the individual hunks in files. --interactive enters the interactive mode, and is a bit more powerful. So powerful that it has its own little submenu:
+
 ```
 y – stage this hunk
 n – do not stage this hunk
