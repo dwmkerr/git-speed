@@ -1,43 +1,71 @@
-# git-speed
+# Advanced Git Techniques
 
-### Show helpful guides that come with Git
+## Git Help
+List available subcommands and some concept guides. See 'git help <command>' or 'git help <concept>' to read about a specific subcommand or concept.
 
 ```bash
+# show helpful guides that come with Git
 git help -g
-```
 
-### Show helpful commands that come with Git
-```bash
+# show helpful commands that come with Git
 git help -a
 ```
 
-'git help -a' and 'git help -g' list available subcommands and some
-concept guides. See 'git help <command>' or 'git help <concept>'
-to read about a specific subcommand or concept.
-
-### Git-standup
-
-```bash
-npm install -g git-standup
-```
-
-```bash
-git-standup
-```
-
 ### TLDR
+Simplified and community-driven man pages
 
 ```bash
 brew install tldr
-```
-
-```bash
 tldr git commit
 ```
 
-### gclone
-Save the following in your .bash_profile or .zshrc
+### Git-standup
+Recall what you did on the last working day, or be nosy and find what someone else in your team did.
 
+```bash
+npm install -g git-standup
+git-standup
+```
+
+---
+
+## Aliases and Functions
+Aliases are helpers that let you define your own git calls. For example, you could set `git a` to run `git add --all` or you could configure `git add -all` to be `gaa`.
+
+### (1) .gitconfig
+To add an alias, either navigate to `~/.gitconfig` and fill it out in the following format:
+
+```
+[alias]
+  co = checkout
+  cm = commit
+  p = push
+  # Show verbose output about tags, branches or remotes
+  tags = tag -l
+  branches = branch -a
+  remotes = remote -v
+```
+
+...or type in the command-line:
+
+```bash
+git config --global alias.cm commit
+```
+
+For an alias with multiple functions use quotes:
+
+```bash
+git config --global alias.ac 'add -A . && commit'
+```
+
+### (2) .zshrc or .bash_profile
+If you want even shorter aliases, you can configure them in your preferred shell configuration file. For example if you are using zsh, open its rc file `vim ~/.zshrc` and add a new alias like so:
+
+```bash
+alias gds="git diff --staged"
+```
+
+You can also add functions:
 ```bash
 # clone repository and directly cd into it
 gclone() {
@@ -45,18 +73,24 @@ gclone() {
 }
 ```
 
+Have a look at this [example .zshrc](https://github.com/tobiasbueschel/git-speed/blob/master/.zshrc) configuration. Alternatively, you can also install [oh-my-zsh](https://github.com/robbyrussell/oh-my-zsh/wiki/Plugin:git) to get a pre-configured list of many aliases.
+
+---
+
+## Git Techniques
+
 ### What did I just commit?
 
 Let's say that you just blindly committed changes with `git commit -a` and you're not sure what the actual content of the commit you just made was. You can show the latest commit on your current HEAD with:
 
-```sh
-(master)$ git show
+```bash
+git show
 ```
 
 or
 
-```sh
-$ git log -n1 -p
+```bash
+$ git log -p -1
 ```
 
 ### I want to delete or remove my last commit
@@ -472,11 +506,6 @@ git rebase --interactive HEAD~2
 git push --force-with-lease <remote-name> <branch-name>
 ```
 
-## Alias: git undo
-```sh
-git config --global alias.undo '!f() { git reset --hard $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; }; f'
-```
-
 ## Group commits by authors and title
 ```sh
 git shortlog
@@ -550,53 +579,3 @@ README.md foo.txt
 ```
 
 Voila! We got our removed file back. Git reflog is also useful when rebasing goes terribly wrong.
-
-#### Aliases
-Aliases are helpers that let you define your own git calls. For example you could set `git a` to run `git add --all`.
-
-To add an alias, either navigate to `~/.gitconfig` and fill it out in the following format:
-
-```
-[alias]
-  co = checkout
-  cm = commit
-  p = push
-  # Show verbose output about tags, branches or remotes
-  tags = tag -l
-  branches = branch -a
-  remotes = remote -v
-```
-
-...or type in the command-line:
-
-```bash
-$ git config --global alias.new_alias git_function
-```
-
-For example:
-
-```bash
-$ git config --global alias.cm commit
-```
-
-For an alias with multiple functions use quotes:
-
-```bash
-$ git config --global alias.ac 'add -A . && commit'
-```
-
-Some useful aliases include:
-
-| Alias | Command | What to Type |
-| --- | --- | --- |
-| `git cm` | `git commit` | `git config --global alias.cm commit` |
-| `git co` | `git checkout` | `git config --global alias.co checkout` |
-| `git ac` | `git add . -A` `git commit` | `git config --global alias.ac '!git add -A && git commit'` |
-| `git st` | `git status -sb` | `git config --global alias.st 'status -sb'` |
-| `git tags` | `git tag -l` | `git config --global alias.tags 'tag -l'` |
-| `git branches` | `git branch -a` | `git config --global alias.branches 'branch -a'` |
-| `git cleanup` | `git branch --merged | grep -v '*' | xargs git branch -d` | `git config --global alias.cleanup "!git branch --merged | grep -v '*' | xargs git branch -d"` |
-| `git remotes` | `git remote -v` | `git config --global alias.remotes 'remote -v'` |
-| `git lg` | `git log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --` | `git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --"` |
-
-*Some Aliases are taken from [@mathiasbynens](https://github.com/mathiasbynens) dotfiles: https://github.com/mathiasbynens/dotfiles/blob/master/.gitconfig*
