@@ -198,6 +198,12 @@ this is produced:
 
 ![git status -sb](http://i.imgur.com/K0OY3nm.png)
 
+create an alias for it
+```bash
+$ git config --global alias.shorty 'status --short --branch'
+```
+
+
 [*Read more about the Git `status` command.*](http://git-scm.com/docs/git-status)
 
 
