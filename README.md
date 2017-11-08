@@ -6,6 +6,103 @@
 git help -g
 ```
 
+### Git-standup
+
+```bash
+npm install -g git-standup
+```
+
+```bash
+git-standup
+```
+
+### TLDR
+
+```bash
+brew install tldr
+```
+
+```bash
+tldr git commit
+```
+
+### gclone
+Save the following in your .bash_profile or .zshrc
+
+```bash
+# clone repository and directly cd into it
+gclone() {
+  git clone "$1" && cd "$(basename "$1")"
+}
+```
+
+### What did I just commit?
+
+Let's say that you just blindly committed changes with `git commit -a` and you're not sure what the actual content of the commit you just made was. You can show the latest commit on your current HEAD with:
+
+```sh
+(master)$ git show
+```
+
+or
+
+```sh
+$ git log -n1 -p
+```
+
+### I want to delete or remove my last commit
+
+If you need to delete pushed commits, you can use the following. However, it will irreversibly change your history, and mess up the history of anyone else who had already pulled from the repository. In short, if you're not sure, you should never do this, ever.
+
+```sh
+$ git reset HEAD^ --hard
+$ git push --force-with-lease [remote] [branch]
+```
+
+If you haven't pushed, to reset Git to the state it was in before you made your last commit (while keeping your staged changes):
+
+```
+(my-branch*)$ git reset --soft HEAD@{1}
+
+```
+
+This only works if you haven't pushed. If you have pushed, the only truly safe thing to do is `git revert SHAofBadCommit`. That will create a new commit that undoes all the previous commit's changes. Or, if the branched you pushed to is rebase-safe (ie. other devs aren't expected to pull from it), you can just use `git push --force-with-lease`. For more, see [the above section](#deleteremove-last-pushed-commit).
+
+<a name="delete-any-commit"></a>
+### Delete/remove arbitrary commit
+
+The same warning applies as above. Never do this if possible.
+
+```sh
+$ git rebase --onto SHA1_OF_BAD_COMMIT^ SHA1_OF_BAD_COMMIT
+$ git push --force-with-lease [remote] [branch]
+```
+
+Or do an [interactive rebase](#interactive-rebase) and remove the line(s) corresponding to commit(s) you want to see removed.
+
+<a name="#force-push"></a>
+### I tried to push my amended commit to a remote, but I got an error message
+
+```sh
+To https://github.com/yourusername/repo.git
+! [rejected]        mybranch -> mybranch (non-fast-forward)
+error: failed to push some refs to 'https://github.com/tanay1337/webmaker.org.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+```
+
+Note that, as with rebasing (see below), amending **replaces the old commit with a new one**, so you must force push (`--force-with-lease`) your changes if you have already pushed the pre-amended commit to your remote. Be careful when you do this &ndash; *always* make sure you specify a branch!
+
+```sh
+(my-branch)$ git push origin mybranch --force-with-lease
+```
+
+In general, **avoid force pushing**. It is best to create and push a new commit rather than force-pushing the amended commit as it has will cause conflicts in the source history for any other developer who has interacted with the branch in question or any child branches. `--force-with-lease` will still fail, if someone else was also working on the same branch as you, and your push would overwrite those changes.
+
+If you are *absolutely* sure that nobody is working on the same branch or you want to update the tip of the branch *unconditionally*, you can use `--force` (`-f`), but this should be avoided in general.
+
 ### Remove All Deleted Files from the Working Tree
 When you delete a lot of files using `/bin/rm` you can use the following command to remove them from the working tree and from the index, eliminating the need to remove each one individually:
 
@@ -93,6 +190,23 @@ this is produced:
 ![git status -sb](http://i.imgur.com/K0OY3nm.png)
 
 [*Read more about the Git `status` command.*](http://git-scm.com/docs/git-status)
+
+
+### Git reflog
+If you accidentally do `git reset --hard`, you can normally still get your commit back, as git keeps a log of everything for a few days.
+
+```sh
+(master)$ git reflog
+```
+
+You'll see a list of your past commits, and a commit for the reset. Choose the SHA of the commit you want to return to, and reset again:
+
+```sh
+(master)$ git reset --hard SHA1234
+```
+
+And you should be good to go.
+
 
 ### Styled Git Log
 Running:
@@ -217,6 +331,189 @@ opens:
 ![Git instaweb](http://i.imgur.com/Dxekmqc.png)
 
 [*Read more about the Git `instaweb` command.*](http://git-scm.com/docs/git-instaweb)
+
+### Amending
+
+## Reword the previous commit message
+```sh
+git commit -v --amend
+```
+
+## Amend author.
+```sh
+git commit --amend --author='Author Name <email@address.com>'
+```
+
+## Reset author, after author has been changed in the global config.
+```sh
+git commit --amend --reset-author --no-edit
+```
+
+## Staging
+
+<a href="#i-need-to-add-staged-changes-to-the-previous-commit"></a>
+### I need to add staged changes to the previous commit
+
+```sh
+(my-branch*)$ git commit --amend
+
+```
+
+<a name="commit-partial-new-file"></a>
+### I want to stage part of a new file, but not the whole file
+
+Normally, if you want to stage part of a file, you run this:
+
+```sh
+$ git add --patch filename.x
+```
+
+`-p` will work for short. This will open interactive mode. You would be able to use the `s` option to split the commit - however, if the file is new, you will not have this option. To add a new file, do this:
+
+```sh
+$ git add -N filename.x
+```
+
+Then, you will need to use the `e` option to manually choose which lines to add. Running `git diff --cached` will show you which lines you have staged compared to which are still saved locally.
+
+
+<a href="stage-in-two-commits"></a>
+### I want to add changes in one file to two different commits
+
+`git add` will add the entire file to a commit. `git add -p` will allow to interactively select which changes you want to add.
+
+## Stage parts of a changed file, instead of the entire file
+```sh
+git add -p
+```
+
+Checkout undesired changes, keep good changes.
+
+```sh
+$ git checkout -p
+# Answer y to all of the snippets you want to drop
+```
+
+Another strategy involves using `stash`. Stash all the good changes, reset working copy, and reapply good changes.
+
+```sh
+$ git stash -p
+# Select all of the snippets you want to save
+$ git reset --hard
+$ git stash pop
+```
+
+## What changed since two weeks?
+```sh
+git log --no-merges --raw --since='2 weeks ago'
+```
+
+
+__Alternatives:__
+```sh
+git whatchanged --since='2 weeks ago'
+```
+
+## Prunes references to remote branches that have been deleted in the remote.
+```sh
+git fetch -p
+```
+
+
+__Alternatives:__
+```sh
+git remote prune origin
+```
+
+
+## Change previous two commits with an interactive rebase.
+```sh
+git rebase --interactive HEAD~2
+```
+
+## Forced push but still ensure you don't overwrite other's work
+```sh
+git push --force-with-lease <remote-name> <branch-name>
+```
+
+## Alias: git undo
+```sh
+git config --global alias.undo '!f() { git reset --hard $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; }; f'
+```
+
+## Group commits by authors and title
+```sh
+git shortlog
+```
+
+### I accidentally deleted my branch
+
+If you're regularly pushing to remote, you should be safe most of the time. But still sometimes you may end up deleting your branches. Let's say we create a branch and create a new file:
+
+```sh
+(master)$ git checkout -b my-branch
+(my-branch)$ git branch
+(my-branch)$ touch foo.txt
+(my-branch)$ ls
+README.md foo.txt
+```
+
+Let's add it and commit.
+
+```sh
+(my-branch)$ git add .
+(my-branch)$ git commit -m 'foo.txt added'
+(my-branch)$ foo.txt added
+ 1 files changed, 1 insertions(+)
+ create mode 100644 foo.txt
+(my-branch)$ git log
+
+commit 4e3cd85a670ced7cc17a2b5d8d3d809ac88d5012
+Author: siemiatj <siemiatj@example.com>
+Date:   Wed Jul 30 00:34:10 2014 +0200
+
+    foo.txt added
+
+commit 69204cdf0acbab201619d95ad8295928e7f411d5
+Author: Kate Hudson <katehudson@example.com>
+Date:   Tue Jul 29 13:14:46 2014 -0400
+
+    Fixes #6: Force pushing after amending commits
+```
+
+Now we're switching back to master and 'accidentally' removing our branch.
+
+```sh
+(my-branch)$ git checkout master
+Switched to branch 'master'
+Your branch is up-to-date with 'origin/master'.
+(master)$ git branch -D my-branch
+Deleted branch my-branch (was 4e3cd85).
+(master)$ echo oh noes, deleted my branch!
+oh noes, deleted my branch!
+```
+
+At this point you should get familiar with 'reflog', an upgraded logger. It stores the history of all the action in the repo.
+
+```
+(master)$ git reflog
+69204cd HEAD@{0}: checkout: moving from my-branch to master
+4e3cd85 HEAD@{1}: commit: foo.txt added
+69204cd HEAD@{2}: checkout: moving from master to my-branch
+```
+
+As you can see we have commit hash from our deleted branch. Let's see if we can restore our deleted branch.
+
+```sh
+(master)$ git checkout -b my-branch-help
+Switched to a new branch 'my-branch-help'
+(my-branch-help)$ git reset --hard 4e3cd85
+HEAD is now at 4e3cd85 foo.txt added
+(my-branch-help)$ ls
+README.md foo.txt
+```
+
+Voila! We got our removed file back. Git reflog is also useful when rebasing goes terribly wrong.
 
 #### Aliases
 Aliases are helpers that let you define your own git calls. For example you could set `git a` to run `git add --all`.
