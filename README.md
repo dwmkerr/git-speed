@@ -1,5 +1,7 @@
 # Advanced Git Techniques
 
+[![GuardRails badge](https://badges.production.guardrails.io/dwmkerr/git-speed.svg)](https://www.guardrails.io)
+
 ## Git Help
 List available subcommands and some concept guides. See 'git help <command>' or 'git help <concept>' to read about a specific subcommand or concept.
 
